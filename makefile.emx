@@ -1,0 +1,48 @@
+###############################################################################
+# $Id: makefile.emx,v 1.1.1.1 1993/02/04 15:21:48 ak Exp $
+###############################################################################
+# $Log: makefile.emx,v $
+# Revision 1.1.1.1  1993/02/04  15:21:48  ak
+# Texinfo -> OS/2 IPF/INF converter.
+#
+# Revision 1.1  1993/02/04  15:21:44  ak
+# Initial revision
+#
+###############################################################################
+
+CC	= gcc
+# DEBUG	= -g -DDEBUG
+OPTIM	= -O2
+LFLAGS	+= -s -d
+CFLAGS	+= $(DEBUG) $(OPTIM) -Igen -I.
+LDFLAGS	+= $(DEBUG) $(OPTIM)
+LDLIBS	+= -lgpp
+
+SOURCES	= main.cc scan.l util.cc
+GENMODS	= String_Name_AVLMap String_Name_Map \
+	  String_XClass_VHMap String_XClass_Map \
+	  String_XEntry_AVLMap String_XEntry_Map \
+	  String_int_AVLMap String_int_Map \
+	  XItem_SLBag XItem_Bag XItem_SLList
+GENSRCS	= {$(GENMODS)}.cc {$(GENMODS)}.h String_defs.h XItem_defs.h
+
+OBJS	= {$(SOURCES:b)}.o
+GENOBJS	= {$(GENMODS)}.o
+
+ALL	= $(SOURCES) $(GENSRCS) info.h makefile.emx
+
+.SOURCE.h  : . gen
+.SOURCE.cc : . gen
+.SOURCE.o  : obj
+
+texi2ipf.exe : $(OBJS) $(GENOBJS)
+	$(CC) $(LDFLAGS) $< $(LDLIBS) -o $@
+
+scan.cc : scan.l
+	$(LEX) $(LFLAGS) $<
+	mv lexyy.c $@
+       
+main.o : info.h
+
+install : texi2ipf.exe
+	cp -t texi2ipf.exe $(ROOTDIR)/usr/bin32
